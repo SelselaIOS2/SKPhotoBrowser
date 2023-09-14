@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import LinkPresentation
 
 public let SKPHOTO_LOADING_DID_END_NOTIFICATION = "photoLoadingDidEndNotification"
 
@@ -231,23 +232,27 @@ open class SKPhotoBrowser: UIViewController {
     
     open func popupShare(includeCaption: Bool = true) {
         let photo = photos[currentPageIndex]
+        
         guard let underlyingImage = photo.underlyingImage else {
             return
         }
         
-        var activityItems: [AnyObject] = [underlyingImage]
-        if photo.caption != nil && includeCaption {
-            if let shareExtraCaption = SKPhotoBrowserOptions.shareExtraCaption {
-                let caption = photo.caption ?? "" + shareExtraCaption
-                activityItems.append(caption as AnyObject)
-            } else {
-                activityItems.append(photo.caption as AnyObject)
-            }
-        }
+        let activityItems: [AnyObject] = [
+            ShareableImage(image: underlyingImage, title: NSLocalizedString("MyStrings.Texts.image", comment: ""))
+        ]
         
-        if let activityItemProvider = activityItemProvider {
-            activityItems.append(activityItemProvider.item as AnyObject)
-        }
+//        if photo.caption != nil && includeCaption {
+//            if let shareExtraCaption = SKPhotoBrowserOptions.shareExtraCaption {
+//                let caption = photo.caption ?? "" + shareExtraCaption
+//                activityItems.append(caption as AnyObject)
+//            } else {
+//                activityItems.append(photo.caption as AnyObject)
+//            }
+//        }
+//
+//        if let activityItemProvider = activityItemProvider {
+//            activityItems.append(activityItemProvider.item as AnyObject)
+//        }
         
         activityViewController = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
         activityViewController.completionWithItemsHandler = { (activity, success, items, error) in
@@ -632,5 +637,37 @@ extension SKPhotoBrowser: UIScrollViewDelegate {
     
     public func scrollViewDidEndScrollingAnimation(_ scrollView: UIScrollView) {
         isEndAnimationByToolBar = true
+    }
+}
+
+final class ShareableImage: NSObject, UIActivityItemSource {
+    
+    private let image: UIImage
+    private let title: String
+
+    init(image: UIImage, title: String) {
+        self.image = image
+        self.title = title
+        super.init()
+    }
+
+    func activityViewControllerPlaceholderItem(_ activityViewController: UIActivityViewController) -> Any {
+        return title
+    }
+
+    func activityViewController(_ activityViewController: UIActivityViewController, itemForActivityType activityType: UIActivity.ActivityType?) -> Any? {
+        return image
+    }
+
+    func activityViewControllerLinkMetadata(_ activityViewController: UIActivityViewController) -> LPLinkMetadata? {
+        let metadata = LPLinkMetadata()
+        metadata.title = title
+        metadata.iconProvider = NSItemProvider(object: image)
+        
+        return metadata
+    }
+    
+    func activityViewController(_ activityViewController: UIActivityViewController, subjectForActivityType activityType: UIActivity.ActivityType?) -> String {
+        return title
     }
 }
