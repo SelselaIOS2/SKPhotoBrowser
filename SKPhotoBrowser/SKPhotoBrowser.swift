@@ -238,7 +238,7 @@ open class SKPhotoBrowser: UIViewController {
         }
         
         let activityItems: [AnyObject] = [
-            ShareableImage(image: underlyingImage, title: NSLocalizedString("MyStrings.Texts.image", comment: ""))
+            ShareableImage(image: underlyingImage, title: NSLocalizedString("Strings.Texts.image", comment: ""))
         ]
         
 //        if photo.caption != nil && includeCaption {
